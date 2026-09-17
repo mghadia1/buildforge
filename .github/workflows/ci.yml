@@ -10,12 +10,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.23'
-          cache: true
+          # BuildForge has no external dependencies, so there is no go.sum and
+          # nothing for the module cache to restore. Leaving this on makes
+          # every run log a cache-restore failure for a cache that should not
+          # exist.
+          cache: false
 
       # Formatting is not a matter of taste in Go; gofmt is the format.
       - name: gofmt
@@ -43,12 +47,16 @@ jobs:
     # real C compiler, on a platform other than the one it was written on.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.23'
-          cache: true
+          # BuildForge has no external dependencies, so there is no go.sum and
+          # nothing for the module cache to restore. Leaving this on makes
+          # every run log a cache-restore failure for a cache that should not
+          # exist.
+          cache: false
 
       - name: build the binary
         run: go build -o /tmp/buildforge ./cmd/buildforge
