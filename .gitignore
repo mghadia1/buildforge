@@ -1,0 +1,6 @@
+/buildforge
+/.buildforge/
+*.test
+*.out
+.DS_Store
+/testdata/cproject/out/

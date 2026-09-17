@@ -1,0 +1,16 @@
+{
+  "actions": [
+    {
+      "name": "compile",
+      "inputs": ["/usr/include/stdio.h"],
+      "outputs": [],
+      "command": []
+    },
+    {
+      "name": "link",
+      "deps": ["ghost"],
+      "outputs": ["out/app"],
+      "command": ["cc", "-o", "out/app"]
+    }
+  ]
+}

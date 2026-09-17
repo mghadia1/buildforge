@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      # Formatting is not a matter of taste in Go; gofmt is the format.
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "these files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      # -race matters here: the scheduler runs one goroutine per action and
+      # shares a mutex-guarded result map between them.
+      - name: go test -race
+        run: go test ./... -race -count=1
+
+      - name: build
+        run: go build ./...
+
+  smoke:
+    # The tests exercise the packages; this exercises the command, against a
+    # real C compiler, on a platform other than the one it was written on.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: build the binary
+        run: go build -o /tmp/buildforge ./cmd/buildforge
+
+      - name: validate and order the fixtures
+        run: |
+          /tmp/buildforge validate -f testdata/simple.json
+          /tmp/buildforge graph -f testdata/simple.json
+
+      - name: a cycle is reported, not run
+        run: |
+          if /tmp/buildforge graph -f testdata/cycle.json; then
+            echo "expected a cycle error"; exit 1
+          fi
+
+      - name: build a real C program, then hit the cache
+        run: |
+          /tmp/buildforge build -f testdata/cproject/build.json
+          ./testdata/cproject/out/app
+          rm -rf testdata/cproject/out
+          /tmp/buildforge build -f testdata/cproject/build.json | tee /tmp/second.txt
+          grep -q '3 cached' /tmp/second.txt
+
+      - name: the sandbox catches an undeclared input
+        run: |
+          if /tmp/buildforge build -f testdata/underdeclared/build.json; then
+            echo "expected the sandbox to reject the under-declared manifest"; exit 1
+          fi
+
+      - name: without the sandbox, the same manifest builds
+        run: |
+          /tmp/buildforge build -f testdata/underdeclared/build.json -no-sandbox -no-cache
+          ./testdata/underdeclared/out/app

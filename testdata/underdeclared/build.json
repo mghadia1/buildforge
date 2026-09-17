@@ -1,0 +1,17 @@
+{
+  "actions": [
+    {
+      "name": "compile",
+      "inputs": ["src/main.c"],
+      "outputs": ["out/main.o"],
+      "command": ["cc", "-Isrc", "-c", "-o", "out/main.o", "src/main.c"]
+    },
+    {
+      "name": "link",
+      "deps": ["compile"],
+      "inputs": ["out/main.o"],
+      "outputs": ["out/app"],
+      "command": ["cc", "-o", "out/app", "out/main.o"]
+    }
+  ]
+}

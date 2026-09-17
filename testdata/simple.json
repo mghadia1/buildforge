@@ -1,0 +1,23 @@
+{
+  "actions": [
+    {
+      "name": "compile_main",
+      "inputs": ["src/main.c", "src/app.h"],
+      "outputs": ["out/main.o"],
+      "command": ["cc", "-c", "-o", "out/main.o", "src/main.c"]
+    },
+    {
+      "name": "compile_util",
+      "inputs": ["src/util.c", "src/app.h"],
+      "outputs": ["out/util.o"],
+      "command": ["cc", "-c", "-o", "out/util.o", "src/util.c"]
+    },
+    {
+      "name": "link",
+      "deps": ["compile_main", "compile_util"],
+      "inputs": ["out/main.o", "out/util.o"],
+      "outputs": ["out/app"],
+      "command": ["cc", "-o", "out/app", "out/main.o", "out/util.o"]
+    }
+  ]
+}

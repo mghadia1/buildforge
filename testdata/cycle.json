@@ -1,0 +1,22 @@
+{
+  "actions": [
+    {
+      "name": "generate_header",
+      "deps": ["compile"],
+      "outputs": ["out/generated.h"],
+      "command": ["./tools/gen.sh"]
+    },
+    {
+      "name": "compile",
+      "deps": ["generate_header"],
+      "inputs": ["out/generated.h"],
+      "outputs": ["out/main.o"],
+      "command": ["cc", "-c", "-o", "out/main.o", "src/main.c"]
+    },
+    {
+      "name": "docs",
+      "outputs": ["out/README.html"],
+      "command": ["./tools/docs.sh"]
+    }
+  ]
+}
